@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -12,6 +13,7 @@
     </div>
 
     <div id="overlay"></div>
+    <div id="overlay-details"></div>
 
     <div id="add-idea-popup">
         <span class="close-button" onclick="toggleAddIdea()">&times;</span>
@@ -23,6 +25,20 @@
             <textarea id="details" name="details" rows="4"></textarea><br>
             <button type="submit">Отправить</button>
         </form>
+    </div>
+
+    <div id="details-popup">
+        <div class="details-content">
+            <span class="close-button" onclick="toggleDetails()">&times;</span>
+            <h2>Подробности</h2>
+            <p id="details-text"></p>
+            <ul id="executors-list"></ul>
+            <form id="add-executor-form">
+                <label for="new-executor">Подпишитесь, если собираетесь исполнить:</label><br>
+                <input type="text" id="new-executor" name="new-executor"><br>
+                <button type="submit">Исполнить</button>
+            </form>
+        </div>
     </div>
 
     <div class="ideas-panel" id="ideas-panel">
@@ -38,6 +54,14 @@
             addIdeaPopup.style.display = addIdeaPopup.style.display === "none" ? "block" : "none";
         }
 
+        function toggleDetails() {
+            var overlay = document.getElementById("overlay-details");
+            var detailsPopup = document.getElementById("details-popup");
+
+            overlay.style.display = overlay.style.display === "none" ? "block" : "none";
+            detailsPopup.style.display = detailsPopup.style.display === "none" ? "block" : "none";
+        }
+
         document.getElementById("add-idea-form").addEventListener("submit", function(e) {
             e.preventDefault();
             let shortDescription = document.getElementById("short-description").value;
@@ -51,9 +75,54 @@
             var ideasPanel = document.getElementById("ideas-panel");
             var newIdea = document.createElement("div");
             newIdea.className = "idea";
-            newIdea.innerHTML = "<strong>" + shortDescription + "</strong><br>" + details;
+            var strongElement = document.createElement("strong");
+            strongElement.textContent = shortDescription;
+            var brElement = document.createElement("br");
+            var detailsText = document.createTextNode(details);
+            var viewDetailsButton = document.createElement("button");
+            viewDetailsButton.className = "view-details-button";
+            viewDetailsButton.textContent = "Показать детали";
+            viewDetailsButton.onclick = function() {
+                showDetails(details);
+            };
+            newIdea.appendChild(strongElement);
+            newIdea.appendChild(brElement);
+            newIdea.appendChild(detailsText);
+            newIdea.appendChild(viewDetailsButton);
             ideasPanel.appendChild(newIdea);
         }
+
+        function showDetails(details) {
+            var detailsPopup = document.getElementById("details-popup");
+            var detailsTextElement = document.getElementById("details-text");
+            detailsTextElement.textContent = details;
+            var executorsList = document.getElementById("executors-list");
+            executorsList.innerHTML = "";
+            toggleDetails();
+        }
+
+        document.getElementById("add-executor-form").addEventListener("submit", function(e) {
+            e.preventDefault();
+            let newExecutor = document.getElementById("new-executor").value;
+            addExecutor(newExecutor);
+            document.getElementById("add-executor-form").reset();
+        });
+
+        function addExecutor(newExecutor) {
+            var executorsList = document.getElementById("executors-list");
+            var newExecutorElement = document.createElement("li");
+            newExecutorElement.textContent = newExecutor;
+            executorsList.appendChild(newExecutorElement);
+            localStorage.setItem("executors", executorsList.innerHTML);
+        }
+
+        window.onload = function() {
+            var executorsList = document.getElementById("executors-list");
+            var storedExecutors = localStorage.getItem("executors");
+            if (storedExecutors) {
+                executorsList.innerHTML = storedExecutors;
+            }
+        };
     </script>
 </body>
 </html>
